@@ -33,7 +33,14 @@
 		if ($base$?.remoteUrl.includes('github.com') && $githubEnabled$) return false;
 		return true;
 	}
+
+	let isShiftDown = false;
 </script>
+
+<svelte:window
+	on:keydown={(e) => (isShiftDown = e.shiftKey)}
+	on:keyup={(e) => (isShiftDown = e.shiftKey)}
+/>
 
 <div class="flex h-full w-full max-w-full flex-grow flex-col overflow-hidden">
 	{#if shouldShowHttpsWarning()}
@@ -49,7 +56,19 @@
 		</div>
 	{/if}
 	<div class="relative h-full flex-grow">
-		<div class="scroll-viewport hide-native-scrollbar" bind:this={viewport}>
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div
+			class="scroll-viewport hide-native-scrollbar"
+			bind:this={viewport}
+			on:wheel={(e) => {
+				if (isShiftDown && e.deltaY !== 0) {
+					e.preventDefault();
+					viewport.scrollBy({
+						left: -e.deltaY
+					});
+				}
+			}}
+		>
 			<div class="scroll-contents" bind:this={contents}>
 				<Board
 					{branchController}
